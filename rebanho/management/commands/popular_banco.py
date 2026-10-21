@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         fake = Faker('pt_BR')
         
-        self.stdout.write('A criar utilizador administrador...')
+        self.stdout.write('Criando utilizador administrador...')
         admin_user, _ = User.objects.get_or_create(
             username='admin',
             defaults={
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         admin_user.set_password('admin123')
         admin_user.save()
 
-        self.stdout.write('A criar utilizadores adicionais...')
+        self.stdout.write('Criando utilizadores adicionais...')
         usuarios = [admin_user]
         for _ in range(5):
             u = User.objects.create_user(
@@ -36,7 +36,7 @@ class Command(BaseCommand):
             )
             usuarios.append(u)
 
-        self.stdout.write('A criar propriedades...')
+        self.stdout.write('Criando propriedades...')
         propriedades = []
         estados = ['PE', 'BA', 'CE', 'PB', 'RN']
         for _ in range(10):
@@ -49,7 +49,7 @@ class Command(BaseCommand):
             )
             propriedades.append(prop)
 
-        self.stdout.write('A criar animais e registos de saude...')
+        self.stdout.write('Criando animais e registos de saude...')
         racas = ['Santa Inês', 'Dorper', 'White Dorper', 'Morada Nova', 'Somalis']
         vacinas = ['Aftosa', 'Clostridiose', 'Raiva', 'Linfadenite Caseosa']
         animais = []
@@ -91,7 +91,7 @@ class Command(BaseCommand):
                     observacao="Parto sem complicações"
                 )
 
-        self.stdout.write('A criar movimentaçoes, anuncios e notificaçoes...')
+        self.stdout.write('Criando movimentaçoes, anuncios e notificaçoes...')
         for _ in range(20):
             a = random.choice(animais)
             p_origem = a.propriedade
