@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Movimentação - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-arrow-left-right text-warning fs-4 me-2"></i>
+                    <h4 class="mb-0 fw-bold">Transferir Animal entre Propriedades</h4>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info py-2 small mb-4">
+                    <i class="bi bi-info-circle me-1"></i> Ao confirmar a movimentação, a localização atual do animal será automaticamente atualizada no sistema para a propriedade de destino.
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text small">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{% url 'movimentacao_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning text-dark fw-bold px-4">
+                            <i class="bi bi-check-lg me-1"></i> Confirmar Transferência
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

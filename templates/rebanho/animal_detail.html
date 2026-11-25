@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Animal {{ animal.brinco }} - RebanhoTech{% endblock %}
+
+{% block content %}
+<!-- Top Header & Actions -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a href="{% url 'animal_list' %}" class="text-decoration-none">Animais</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ animal.brinco }}</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0 d-flex align-items-center gap-2">
+            <span>Brinco <span class="text-success">{{ animal.brinco }}</span></span>
+            {% if animal.sexo == 'M' %}
+                <span class="badge bg-primary fs-6"><i class="bi bi-gender-male me-1"></i>Macho</span>
+            {% else %}
+                <span class="badge bg-danger fs-6"><i class="bi bi-gender-female me-1"></i>Fêmea</span>
+            {% endif %}
+        </h2>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'pesagem_create' %}?animal_id={{ animal.pk }}" class="btn btn-outline-primary">
+            <i class="bi bi-speedometer me-1"></i> Pesar
+        </a>
+        <a href="{% url 'vacinacao_create' %}?animal_id={{ animal.pk }}" class="btn btn-outline-danger">
+            <i class="bi bi-capsule me-1"></i> Vacinar
+        </a>
+        {% if animal.sexo == 'F' %}
+            <a href="{% url 'reproducao_create' %}?matriz_id={{ animal.pk }}" class="btn btn-outline-success">
+                <i class="bi bi-gender-ambiguous me-1"></i> Reprodução
+            </a>
+        {% endif %}
+        <a href="{% url 'anuncio_create' %}?animal_id={{ animal.pk }}" class="btn btn-outline-warning text-dark">
+            <i class="bi bi-shop me-1"></i> Anunciar
+        </a>
+        <a href="{% url 'animal_update' animal.pk %}" class="btn btn-secondary">
+            <i class="bi bi-pencil me-1"></i> Editar
+        </a>
+        <a href="{% url 'animal_delete' animal.pk %}" class="btn btn-danger">
+            <i class="bi bi-trash me-1"></i> Excluir
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Coluna Esquerda: Dados Básicos e Genealogia -->
+    <div class="col-lg-4">
+        <!-- Cartão de Dados Gerais -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-card-list me-2 text-primary"></i>Dados Cadastrais</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Raça:</span>
+                        <span class="fw-semibold">{{ animal.raca }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Data de Nascimento:</span>
+                        <span class="fw-semibold">{{ animal.data_nascimento|date:"d/m/Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Idade:</span>
+                        <span class="fw-semibold">{{ animal.data_nascimento|timesince }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Propriedade Atual:</span>
+                        <span class="fw-semibold">{{ animal.propriedade.nome }} ({{ animal.propriedade.cidade }}/{{ animal.propriedade.estado }})</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Último Peso:</span>
+                        <span class="fw-bold text-success">
+                            {% if ultima_pesagem %}
+                                {{ ultima_pesagem.peso_kg|floatformat:2 }} kg ({{ ultima_pesagem.data_pesagem|date:"d/m/Y" }})
+                            {% else %}
+                                <span class="text-muted font-monospace">Sem registro</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Cartão de Genealogia -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-diagram-3-fill me-2 text-success"></i>Genealogia (Linhagem)</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Pai (Reprodutor):</label>
+                    {% if animal.pai %}
+                        <a href="{% url 'animal_detail' animal.pai.pk %}" class="btn btn-outline-primary btn-sm w-100 text-start">
+                            <i class="bi bi-gender-male me-2"></i>Brinco {{ animal.pai.brinco }} ({{ animal.pai.raca }})
+                        </a>
+                    {% else %}
+                        <span class="text-muted fst-italic small">Não informado / Sem registro</span>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Mãe (Matriz):</label>
+                    {% if animal.mae %}
+                        <a href="{% url 'animal_detail' animal.mae.pk %}" class="btn btn-outline-danger btn-sm w-100 text-start">
+                            <i class="bi bi-gender-female me-2"></i>Brinco {{ animal.mae.brinco }} ({{ animal.mae.raca }})
+                        </a>
+                    {% else %}
+                        <span class="text-muted fst-italic small">Não informada / Sem registro</span>
+                    {% endif %}
+                </div>
+
+                <div class="mt-4 pt-3 border-top">
+                    <label class="text-muted small d-block mb-2">Crias / Descendentes ({{ filhos.count }}):</label>
+                    {% if filhos %}
+                        <div class="list-group list-group-flush small">
+                            {% for filho in filhos %}
+                                <a href="{% url 'animal_detail' filho.pk %}" class="list-group-item list-group-item-action px-2 py-1 d-flex justify-content-between align-items-center">
+                                    <span>Brinco {{ filho.brinco }}</span>
+                                    <span class="badge {% if filho.sexo == 'M' %}bg-primary{% else %}bg-danger{% endif %} rounded-pill">{{ filho.sexo }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="text-muted fst-italic small">Nenhum descendente registrado</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna Direita: Abas de Manejo (Pesagens, Vacinas, Reprodução, Movimentações) -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white p-0">
+                <ul class="nav nav-tabs card-header-tabs m-0 px-3 pt-2" id="animalTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pesagens-tab" data-bs-toggle="tab" data-bs-target="#pesagens" type="button" role="tab" aria-selected="true">
+                            <i class="bi bi-speedometer me-1 text-primary"></i> Pesagens ({{ pesagens.count }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="vacinas-tab" data-bs-toggle="tab" data-bs-target="#vacinas" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-capsule me-1 text-danger"></i> Vacinações ({{ vacinas.count }})
+                        </button>
+                    </li>
+                    {% if animal.sexo == 'F' %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="reproducao-tab" data-bs-toggle="tab" data-bs-target="#reproducao" type="button" role="tab" aria-selected="false">
+                                <i class="bi bi-gender-ambiguous me-1 text-success"></i> Reprodução ({{ reproducoes.count }})
+                            </button>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="movimentacoes-tab" data-bs-toggle="tab" data-bs-target="#movimentacoes" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-arrow-left-right me-1 text-warning"></i> Movimentações ({{ movimentacoes.count }})
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="tab-content" id="animalTabsContent">
+                    <!-- ABA: PESAGENS -->
+                    <div class="tab-pane fade show active" id="pesagens" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">Evolução de Peso</h6>
+                            <a href="{% url 'pesagem_create' %}?animal_id={{ animal.pk }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-plus-lg me-1"></i> Nova Pesagem
+                            </a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Data da Pesagem</th>
+                                        <th>Peso (kg)</th>
+                                        <th class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in pesagens %}
+                                        <tr>
+                                            <td>{{ p.data_pesagem|date:"d/m/Y" }}</td>
+                                            <td class="fw-bold text-dark">{{ p.peso_kg|floatformat:2 }} kg</td>
+                                            <td class="text-end">
+                                                <a href="{% url 'pesagem_delete' p.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4 text-muted">
+                                                Nenhum registro de pesagem para este animal.
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ABA: VACINAÇÕES -->
+                    <div class="tab-pane fade" id="vacinas" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">Vacinas e Medicamentos</h6>
+                            <a href="{% url 'vacinacao_create' %}?animal_id={{ animal.pk }}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-plus-lg me-1"></i> Nova Vacinação
+                            </a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Vacina</th>
+                                        <th>Aplicação</th>
+                                        <th>Próxima Dose</th>
+                                        <th class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for v in vacinas %}
+                                        <tr>
+                                            <td class="fw-semibold">{{ v.vacina }}</td>
+                                            <td>{{ v.data_aplicacao|date:"d/m/Y" }}</td>
+                                            <td>
+                                                {% if v.proxima_dose %}
+                                                    <span class="badge bg-info-subtle text-info border">
+                                                        {{ v.proxima_dose|date:"d/m/Y" }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted small">Dose única</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{% url 'vacinacao_delete' v.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4 text-muted">
+                                                Nenhuma vacinação registrada para este animal.
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ABA: REPRODUÇÃO (CASO FÊMEA) -->
+                    {% if animal.sexo == 'F' %}
+                        <div class="tab-pane fade" id="reproducao" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0">Histórico de Coberturas e Partos</h6>
+                                <a href="{% url 'reproducao_create' %}?matriz_id={{ animal.pk }}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-plus-lg me-1"></i> Nova Cobertura/Parto
+                                </a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Data Cobertura/IA</th>
+                                            <th>Data do Parto</th>
+                                            <th>Crias</th>
+                                            <th>Observações</th>
+                                            <th class="text-end">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for r in reproducoes %}
+                                            <tr>
+                                                <td>{{ r.data_cobertura|date:"d/m/Y" }}</td>
+                                                <td>
+                                                    {% if r.data_parto %}
+                                                        <span class="badge bg-success-subtle text-success border">{{ r.data_parto|date:"d/m/Y" }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning-subtle text-dark border">Gestante / Pendente</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ r.qtd_crias }}</td>
+                                                <td>{{ r.observacao|default:"-" }}</td>
+                                                <td class="text-end">
+                                                    <a href="{% url 'reproducao_delete' r.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2" title="Excluir">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-muted">
+                                                    Nenhum registro reprodutivo para esta matriz.
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- ABA: MOVIMENTAÇÕES -->
+                    <div class="tab-pane fade" id="movimentacoes" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">Histórico de Transferências</h6>
+                            <a href="{% url 'movimentacao_create' %}?animal_id={{ animal.pk }}" class="btn btn-sm btn-outline-warning text-dark">
+                                <i class="bi bi-arrow-left-right me-1"></i> Nova Movimentação
+                            </a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Origem</th>
+                                        <th>Destino</th>
+                                        <th>Motivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for m in movimentacoes %}
+                                        <tr>
+                                            <td>{{ m.data_movimentacao|date:"d/m/Y" }}</td>
+                                            <td>{{ m.origem.nome }}</td>
+                                            <td><span class="fw-semibold text-success">{{ m.destino.nome }}</span></td>
+                                            <td>{{ m.motivo }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4 text-muted">
+                                                Nenhuma movimentação registrada para este animal.
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

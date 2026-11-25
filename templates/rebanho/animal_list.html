@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Plantel de Animais - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-tags-fill text-success me-2"></i>Plantel de Animais</h2>
+        <p class="text-muted mb-0">Controle individual de identificação, linhagem e histórico dos seus animais</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'pesagem_create' %}" class="btn btn-outline-primary">
+            <i class="bi bi-speedometer me-1"></i> Nova Pesagem
+        </a>
+        <a href="{% url 'vacinacao_create' %}" class="btn btn-outline-danger">
+            <i class="bi bi-capsule me-1"></i> Nova Vacinação
+        </a>
+        <a href="{% url 'animal_cadastro' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Cadastrar Animal
+        </a>
+    </div>
+</div>
+
+<!-- Filtros de Busca -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Buscar por brinco ou raça...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="propriedade" class="form-select">
+                    <option value="">Todas as Propriedades</option>
+                    {% for p in propriedades %}
+                        <option value="{{ p.id }}" {% if propriedade_id == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="sexo" class="form-select">
+                    <option value="">Todos os Sexos</option>
+                    <option value="M" {% if sexo_selecionado == 'M' %}selected{% endif %}>Macho</option>
+                    <option value="F" {% if sexo_selecionado == 'F' %}selected{% endif %}>Fêmea</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-success">
+                    <i class="bi bi-funnel me-1"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela de Animais -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Brinco</th>
+                        <th>Raça</th>
+                        <th>Sexo</th>
+                        <th>Nascimento</th>
+                        <th>Propriedade</th>
+                        <th class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for animal in page_obj %}
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <a href="{% url 'animal_detail' animal.pk %}" class="text-decoration-none text-dark d-flex align-items-center">
+                                    <span class="badge bg-dark-subtle text-dark border me-2 fs-6">{{ animal.brinco }}</span>
+                                </a>
+                            </td>
+                            <td>{{ animal.raca }}</td>
+                            <td>
+                                {% if animal.sexo == 'M' %}
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                        <i class="bi bi-gender-male me-1"></i>Macho
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                        <i class="bi bi-gender-female me-1"></i>Fêmea
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>{{ animal.data_nascimento|date:"d/m/Y" }}</div>
+                                <div class="text-muted small">({{ animal.data_nascimento|timesince }} atrás)</div>
+                            </td>
+                            <td>
+                                <i class="bi bi-geo-alt text-muted me-1"></i>{{ animal.propriedade.nome }}
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'animal_detail' animal.pk %}" class="btn btn-sm btn-outline-info me-1" title="Ficha Completa">
+                                    <i class="bi bi-file-earmark-person"></i>
+                                </a>
+                                <a href="{% url 'pesagem_create' %}?animal_id={{ animal.pk }}" class="btn btn-sm btn-outline-primary me-1" title="Registrar Pesagem">
+                                    <i class="bi bi-speedometer"></i>
+                                </a>
+                                <a href="{% url 'vacinacao_create' %}?animal_id={{ animal.pk }}" class="btn btn-sm btn-outline-danger me-1" title="Registrar Vacina">
+                                    <i class="bi bi-capsule"></i>
+                                </a>
+                                <a href="{% url 'animal_update' animal.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'animal_delete' animal.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-tags display-4 text-muted d-block mb-3"></i>
+                                Nenhum animal encontrado com os filtros selecionados.
+                                <div class="mt-2">
+                                    <a href="{% url 'animal_cadastro' %}" class="btn btn-sm btn-success">Cadastrar Novo Animal</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "includes/pagination.html" with page_obj=page_obj search_query=search_query extra_query="propriedade="|add:propriedade_id|add:"&sexo="|add:sexo_selecionado %}
+{% endblock %}

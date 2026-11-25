@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Controle Reprodutivo - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-gender-ambiguous text-success me-2"></i>Controle Reprodutivo</h2>
+        <p class="text-muted mb-0">Acompanhamento de coberturas, inseminações, partos e crias</p>
+    </div>
+    <div>
+        <a href="{% url 'reproducao_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Nova Cobertura / Parto
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Buscar por brinco da matriz ou observação...">
+                </div>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-success">Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Matriz (Fêmea)</th>
+                        <th>Raça</th>
+                        <th>Data Cobertura/IA</th>
+                        <th>Data do Parto</th>
+                        <th>Crias</th>
+                        <th>Observações</th>
+                        <th class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in page_obj %}
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <a href="{% url 'animal_detail' r.matriz.pk %}" class="text-decoration-none">
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ r.matriz.brinco }}</span>
+                                </a>
+                            </td>
+                            <td>{{ r.matriz.raca }}</td>
+                            <td>{{ r.data_cobertura|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if r.data_parto %}
+                                    <span class="badge bg-success-subtle text-success border">
+                                        {{ r.data_parto|date:"d/m/Y" }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-dark border">Gestante</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ r.qtd_crias }}</td>
+                            <td><span class="text-muted small">{{ r.observacao|default:"-" }}</span></td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'animal_detail' r.matriz.pk %}" class="btn btn-sm btn-outline-info me-1" title="Ver Matriz">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'reproducao_delete' r.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-gender-ambiguous display-4 text-muted d-block mb-3"></i>
+                                Nenhum registro de reprodução encontrado.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "includes/pagination.html" with page_obj=page_obj search_query=search_query %}
+{% endblock %}

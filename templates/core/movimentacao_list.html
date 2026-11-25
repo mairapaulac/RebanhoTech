@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Movimentações de Animais - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-arrow-left-right text-warning me-2"></i>Movimentações de Animais</h2>
+        <p class="text-muted mb-0">Histórico de transferências entre fazendas, pastos e propriedades</p>
+    </div>
+    <div>
+        <a href="{% url 'movimentacao_create' %}" class="btn btn-warning text-dark fw-semibold">
+            <i class="bi bi-plus-circle me-1"></i> Nova Transferência
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Buscar por brinco, motivo ou nome da propriedade...">
+                </div>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-warning text-dark">Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Animal (Brinco)</th>
+                        <th>Raça</th>
+                        <th>Propriedade de Origem</th>
+                        <th>Propriedade de Destino</th>
+                        <th>Data da Movimentação</th>
+                        <th>Motivo</th>
+                        <th class="text-end pe-4">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in page_obj %}
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <a href="{% url 'animal_detail' m.animal.pk %}" class="text-decoration-none">
+                                    <span class="badge bg-dark-subtle text-dark border">{{ m.animal.brinco }}</span>
+                                </a>
+                            </td>
+                            <td>{{ m.animal.raca }}</td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary border">
+                                    <i class="bi bi-geo-alt me-1"></i>{{ m.origem.nome }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success-subtle text-success border">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>{{ m.destino.nome }}
+                                </span>
+                            </td>
+                            <td>{{ m.data_movimentacao|date:"d/m/Y" }}</td>
+                            <td><span class="text-muted small">{{ m.motivo }}</span></td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'animal_detail' m.animal.pk %}" class="btn btn-sm btn-outline-info" title="Ver Animal">
+                                    <i class="bi bi-file-earmark-person"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-arrow-left-right display-4 text-muted d-block mb-3"></i>
+                                Nenhuma movimentação registrada.
+                                <div class="mt-2">
+                                    <a href="{% url 'movimentacao_create' %}" class="btn btn-sm btn-warning text-dark">Registrar Primeira Transferência</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "includes/pagination.html" with page_obj=page_obj search_query=search_query %}
+{% endblock %}

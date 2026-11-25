@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Minhas Propriedades - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-geo-alt-fill text-success me-2"></i>Propriedades Rurais</h2>
+        <p class="text-muted mb-0">Gerencie suas fazendas, sítios e áreas de pastagem</p>
+    </div>
+    <div>
+        <a href="{% url 'propriedade_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Nova Propriedade
+        </a>
+    </div>
+</div>
+
+<!-- Barra de Busca -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Buscar por nome da fazenda, cidade ou estado...">
+                </div>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-success">Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela de Propriedades -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Nome da Propriedade</th>
+                        <th>Localização</th>
+                        <th>Área (Hectares)</th>
+                        <th>Animais Cadastrados</th>
+                        <th class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prop in page_obj %}
+                        <tr>
+                            <td class="ps-4 fw-semibold text-dark">
+                                <i class="bi bi-house-door text-muted me-2"></i>{{ prop.nome }}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary border">
+                                    {{ prop.cidade }}/{{ prop.estado }}
+                                </span>
+                            </td>
+                            <td>{{ prop.area_hectares|intcomma }} ha</td>
+                            <td>
+                                <span class="badge bg-success-subtle text-success">
+                                    <i class="bi bi-tags me-1"></i>{{ prop.total_animais }} animais
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'animal_list' %}?propriedade={{ prop.id }}" class="btn btn-sm btn-outline-info me-1" title="Ver Animais">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'propriedade_update' prop.id %}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'propriedade_delete' prop.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-geo-alt display-4 text-muted d-block mb-3"></i>
+                                Nenhuma propriedade encontrada.
+                                {% if search_query %}
+                                    <div class="mt-2"><a href="{% url 'propriedade_list' %}" class="btn btn-sm btn-outline-secondary">Limpar busca</a></div>
+                                {% else %}
+                                    <div class="mt-2"><a href="{% url 'propriedade_create' %}" class="btn btn-sm btn-success">Cadastrar a primeira propriedade</a></div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "includes/pagination.html" with page_obj=page_obj search_query=search_query %}
+{% endblock %}

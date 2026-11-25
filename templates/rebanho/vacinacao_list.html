@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Vacinações e Sanitário - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-capsule text-danger me-2"></i>Controle Sanitário & Vacinações</h2>
+        <p class="text-muted mb-0">Gestão do calendário de vacinas e medicamentos do rebanho</p>
+    </div>
+    <div>
+        <a href="{% url 'vacinacao_create' %}" class="btn btn-danger">
+            <i class="bi bi-plus-circle me-1"></i> Nova Vacinação
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Buscar por vacina ou brinco do animal...">
+                </div>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-danger">Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Animal</th>
+                        <th>Vacina / Medicamento</th>
+                        <th>Data de Aplicação</th>
+                        <th>Próxima Dose</th>
+                        <th class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in page_obj %}
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <a href="{% url 'animal_detail' v.animal.pk %}" class="text-decoration-none">
+                                    <span class="badge bg-dark-subtle text-dark border">{{ v.animal.brinco }}</span>
+                                </a>
+                            </td>
+                            <td class="fw-semibold text-dark">{{ v.vacina }}</td>
+                            <td>{{ v.data_aplicacao|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if v.proxima_dose %}
+                                    <span class="badge bg-info-subtle text-info border">
+                                        {{ v.proxima_dose|date:"d/m/Y" }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted small">Dose Única</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'animal_detail' v.animal.pk %}" class="btn btn-sm btn-outline-info me-1" title="Ver Animal">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'vacinacao_delete' v.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-capsule display-4 text-muted d-block mb-3"></i>
+                                Nenhuma vacinação registrada.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% include "includes/pagination.html" with page_obj=page_obj search_query=search_query %}
+{% endblock %}

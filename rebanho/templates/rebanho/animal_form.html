@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}{{ acao|default:"Cadastrar" }} Animal - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-tag-fill text-success fs-4 me-2"></i>
+                    <h4 class="mb-0 fw-bold">{{ acao|default:"Cadastrar" }} Animal</h4>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.brinco.id_for_label }}" class="form-label fw-semibold">Número do Brinco *</label>
+                            {{ form.brinco }}
+                            {% for error in form.brinco.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.raca.id_for_label }}" class="form-label fw-semibold">Raça *</label>
+                            {{ form.raca }}
+                            {% for error in form.raca.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.sexo.id_for_label }}" class="form-label fw-semibold">Sexo *</label>
+                            {{ form.sexo }}
+                            {% for error in form.sexo.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.data_nascimento.id_for_label }}" class="form-label fw-semibold">Data de Nascimento *</label>
+                            {{ form.data_nascimento }}
+                            {% for error in form.data_nascimento.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-12">
+                            <label for="{{ form.propriedade.id_for_label }}" class="form-label fw-semibold">Propriedade Rural *</label>
+                            {{ form.propriedade }}
+                            {% for error in form.propriedade.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <h6 class="fw-bold text-muted border-bottom pb-2">
+                                <i class="bi bi-diagram-3 me-1"></i> Genealogia / Parentesco (Opcional)
+                            </h6>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.pai.id_for_label }}" class="form-label fw-semibold">Pai (Reprodutor Macho)</label>
+                            {{ form.pai }}
+                            {% for error in form.pai.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.mae.id_for_label }}" class="form-label fw-semibold">Mãe (Matriz Fêmea)</label>
+                            {{ form.mae }}
+                            {% for error in form.mae.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{% if animal %}{% url 'animal_detail' animal.pk %}{% else %}{% url 'animal_list' %}{% endif %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="bi bi-check-lg me-1"></i> Salvar Animal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

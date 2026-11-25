@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ anuncio.titulo }} - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Coluna Esquerda: Dados do Anúncio e Animal -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge {% if anuncio.ativo %}bg-success{% else %}bg-secondary{% endif %} fs-6">
+                        {% if anuncio.ativo %}Anúncio Ativo{% else %}Finalizado / Concluído{% endif %}
+                    </span>
+                    <span class="text-muted small">
+                        <i class="bi bi-clock me-1"></i>Publicado {{ anuncio.data_publicacao|naturaltime }}
+                    </span>
+                </div>
+
+                <h2 class="fw-bold text-dark mb-3">{{ anuncio.titulo }}</h2>
+
+                <div class="p-3 bg-light rounded-3 mb-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Preço Solicitado:</div>
+                        <div class="fs-2 fw-bold text-success">R$ {{ anuncio.preco|intcomma }}</div>
+                    </div>
+                    {% if user.is_authenticated and user == anuncio.vendedor %}
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'anuncio_update' anuncio.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i> Editar Anúncio
+                            </a>
+                            <a href="{% url 'anuncio_delete' anuncio.pk %}" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash me-1"></i> Excluir
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h5 class="fw-bold mb-2">Descrição do Anúncio</h5>
+                <p class="text-muted" style="white-space: pre-line;">{{ anuncio.descricao }}</p>
+
+                <!-- Ficha do Animal Vinculado -->
+                <div class="mt-4 pt-3 border-top">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-tag-fill text-success me-2"></i>Informações do Animal</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="p-2 border rounded">
+                                <span class="text-muted small d-block">Número do Brinco:</span>
+                                <span class="fw-bold">{{ anuncio.animal.brinco }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-2 border rounded">
+                                <span class="text-muted small d-block">Raça:</span>
+                                <span class="fw-bold">{{ anuncio.animal.raca }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-2 border rounded">
+                                <span class="text-muted small d-block">Sexo:</span>
+                                <span class="fw-bold">
+                                    {% if anuncio.animal.sexo == 'M' %}Macho{% else %}Fêmea{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-2 border rounded">
+                                <span class="text-muted small d-block">Nascimento / Idade:</span>
+                                <span class="fw-bold">{{ anuncio.animal.data_nascimento|date:"d/m/Y" }} ({{ anuncio.animal.data_nascimento|timesince }})</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-2 border rounded">
+                                <span class="text-muted small d-block">Origem / Fazenda:</span>
+                                <span class="fw-bold">{{ anuncio.animal.propriedade.nome }} - {{ anuncio.animal.propriedade.cidade }}/{{ anuncio.animal.propriedade.estado }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Histórico Sanitário e Pesagens -->
+                {% if pesagens or vacinas %}
+                    <div class="mt-4 pt-3 border-top">
+                        <h6 class="fw-bold text-muted mb-2">Histórico Recente de Manejo do Animal</h6>
+                        <div class="row g-3">
+                            {% if pesagens %}
+                                <div class="col-md-6">
+                                    <div class="small fw-semibold mb-1">Últimas Pesagens:</div>
+                                    <ul class="list-group list-group-flush small">
+                                        {% for p in pesagens %}
+                                            <li class="list-group-item px-0 py-1 d-flex justify-content-between">
+                                                <span>{{ p.data_pesagem|date:"d/m/Y" }}</span>
+                                                <span class="fw-bold text-success">{{ p.peso_kg|floatformat:2 }} kg</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                            {% if vacinas %}
+                                <div class="col-md-6">
+                                    <div class="small fw-semibold mb-1">Vacinas Aplicadas:</div>
+                                    <ul class="list-group list-group-flush small">
+                                        {% for v in vacinas %}
+                                            <li class="list-group-item px-0 py-1 d-flex justify-content-between">
+                                                <span>{{ v.vacina }}</span>
+                                                <span class="text-muted">{{ v.data_aplicacao|date:"d/m/Y" }}</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Seção do Vendedor: Propostas Recebidas -->
+        {% if user.is_authenticated and user == anuncio.vendedor %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-chat-left-quote-fill text-warning me-2"></i>Propostas de Compra Recebidas</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Comprador</th>
+                                    <th>Valor Ofertado</th>
+                                    <th>Data da Proposta</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-4">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in propostas_recebidas %}
+                                    <tr>
+                                        <td class="ps-4 fw-semibold">
+                                            {{ p.comprador.first_name|default:p.comprador.username }}
+                                            <span class="text-muted small">({{ p.comprador.email }})</span>
+                                        </td>
+                                        <td class="fw-bold text-success fs-6">
+                                            R$ {{ p.valor_proposto|intcomma }}
+                                        </td>
+                                        <td>{{ p.data_proposta|naturaltime }}</td>
+                                        <td>
+                                            {% if p.status == 'EM_ANDAMENTO' %}
+                                                <span class="badge bg-warning-subtle text-dark border">Em Aberto</span>
+                                            {% elif p.status == 'CONCLUIDA' %}
+                                                <span class="badge bg-success">Aceita</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Recusada</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            {% if p.status == 'EM_ANDAMENTO' and anuncio.ativo %}
+                                                <form method="post" action="{% url 'aceitar_proposta' p.pk %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-success me-1" title="Aceitar Oferta">
+                                                        <i class="bi bi-check-lg"></i> Aceitar
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{% url 'recusar_proposta' p.pk %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Recusar">
+                                                        <i class="bi bi-x-lg"></i> Recusar
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <span class="text-muted small">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            Nenhuma proposta recebida até o momento para este anúncio.
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Coluna Direita: Caixa de Negociação / Proposta e Dados do Vendedor -->
+    <div class="col-lg-4">
+        <!-- Cartão do Vendedor -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-person-badge text-primary me-2"></i>Informações do Criador</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success-subtle text-success rounded-circle" style="width: 48px; height: 48px;">
+                        <i class="bi bi-person-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">{{ anuncio.vendedor.first_name|default:anuncio.vendedor.username }} {{ anuncio.vendedor.last_name }}</h6>
+                        <span class="text-muted small">Criador Cadastrado</span>
+                    </div>
+                </div>
+                <div class="small text-muted">
+                    <div><i class="bi bi-geo-alt me-1"></i>Região: {{ anuncio.animal.propriedade.cidade }}/{{ anuncio.animal.propriedade.estado }}</div>
+                    {% if user.is_authenticated %}
+                        <div><i class="bi bi-envelope me-1"></i>Contato: {{ anuncio.vendedor.email }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de Envio de Proposta -->
+        {% if user.is_authenticated and user != anuncio.vendedor %}
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-chat-quote-fill me-2"></i>Enviar Proposta de Compra</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if proposta_usuario %}
+                        <div class="alert alert-info py-2 small mb-3">
+                            <i class="bi bi-info-circle me-1"></i> Você já enviou uma proposta de <strong>R$ {{ proposta_usuario.valor_proposto|intcomma }}</strong> (Status: <strong>{{ proposta_usuario.get_status_display }}</strong>). Você pode enviar uma nova contraproposta abaixo:
+                        </div>
+                    {% endif %}
+
+                    {% if anuncio.ativo %}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="{{ proposta_form.valor_proposto.id_for_label }}" class="form-label fw-semibold">Sua Oferta em Reais (R$)</label>
+                                {{ proposta_form.valor_proposto }}
+                                {% for error in proposta_form.valor_proposto.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-success btn-lg fw-bold">
+                                    <i class="bi bi-send me-1"></i> Enviar Proposta ao Criador
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-secondary py-3 text-center mb-0">
+                            <i class="bi bi-lock-fill d-block fs-3 mb-2"></i>
+                            Este anúncio já foi finalizado e não aceita mais novas propostas.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% elif not user.is_authenticated %}
+            <div class="card shadow-sm border-0 bg-light">
+                <div class="card-body p-4 text-center">
+                    <i class="bi bi-box-arrow-in-right display-5 text-success d-block mb-3"></i>
+                    <h5 class="fw-bold">Interessado neste animal?</h5>
+                    <p class="text-muted small">Faça login ou crie uma conta gratuita no RebanhoTech para enviar propostas de compra diretamente ao criador.</p>
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-success">Fazer Login</a>
+                        <a href="{% url 'register' %}" class="btn btn-outline-secondary">Criar Minha Conta</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

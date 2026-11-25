@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Pesagem - RebanhoTech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-speedometer text-primary fs-4 me-2"></i>
+                    <h4 class="mb-0 fw-bold">Registrar Pesagem</h4>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                {% if animal %}
+                    <div class="alert alert-info py-2 small mb-3">
+                        <i class="bi bi-info-circle me-1"></i> Registrando pesagem para o animal <strong>{{ animal.brinco }}</strong> ({{ animal.raca }}).
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text small">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-triangle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{% if animal %}{% url 'animal_detail' animal.pk %}{% else %}{% url 'pesagem_list' %}{% endif %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-lg me-1"></i> Salvar Pesagem
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
